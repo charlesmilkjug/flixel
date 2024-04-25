@@ -663,6 +663,7 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	{
 		if (camera != Value)
 			transformChildren(cameraTransform, Value);
+		group.camera = Value;
 		return super.set_camera(Value);
 	}
 
@@ -670,6 +671,7 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	{
 		if (cameras != Value)
 			transformChildren(camerasTransform, Value);
+		group.cameras = Value;
 		return super.set_cameras(Value);
 	}
 

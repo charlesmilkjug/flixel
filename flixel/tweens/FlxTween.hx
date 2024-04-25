@@ -9,6 +9,7 @@ import flixel.math.FlxMath;
 import flixel.tweens.FlxEase.EaseFunction;
 import flixel.tweens.misc.AngleTween;
 import flixel.tweens.misc.ColorTween;
+import flixel.tweens.misc.FlickerTween;
 import flixel.tweens.misc.NumTween;
 import flixel.tweens.misc.VarTween;
 import flixel.tweens.motion.CircularMotion;
@@ -519,6 +520,12 @@ class FlxTween implements IFlxDestroyable
 	public var backward(default, null):Bool;
 
 	/**
+	 * The total time passed since start
+	 * @since 5.7.0
+	 */
+	public var time(get, never):Float;
+
+	/**
 	 * How many times this tween has been executed / has finished so far - useful to
 	 * stop the `LOOPING` and `PINGPONG` types after a certain amount of time
 	 */
@@ -855,9 +862,14 @@ class FlxTween implements IFlxDestroyable
 		return loopDelay = dly;
 	}
 
+	inline function get_time():Float
+	{
+		return Math.max(_secondsSinceStart - _delayToUse, 0);
+	}
+
 	inline function get_percent():Float
 	{
-		return Math.max((_secondsSinceStart - _delayToUse), 0) / duration;
+		return time / duration;
 	}
 
 	function set_percent(value:Float):Float
@@ -998,6 +1010,40 @@ class FlxTweenManager extends FlxBasic
 		var tween = new NumTween(Options, this);
 		tween.tween(FromValue, ToValue, Duration, TweenFunction);
 		return add(tween);
+	}
+
+	/**
+	 * Flickers the desired object
+	 *
+	 * @param   basic     The object to flicker
+	 * @param   duration  Duration of the tween, in seconds
+	 * @param   period    How often, in seconds, the visibility cycles
+	 * @param   options   A structure with flicker and tween options
+	 * @since 5.7.0
+	 */
+	public function flicker(basic:FlxBasic, duration = 1.0, period = 0.08, ?options:FlickerTweenOptions)
+	{
+		final tween = new FlickerTween(options, this);
+		tween.tween(basic, duration, period);
+		return add(tween);
+	}
+
+	/**
+	 * Whether the object is flickering via this manager
+	 * @since 5.7.0
+	 */
+	public function isFlickering(basic:FlxBasic)
+	{
+		return containsTweensOf(basic, ["flicker"]);
+	}
+
+	/**
+	 * Cancels all flicker tweens on the object
+	 * @since 5.7.0
+	 */
+	public function stopFlickering(basic:FlxBasic)
+	{
+		return cancelTweensOf(basic, ["flicker"]);
 	}
 
 	/**
@@ -1448,6 +1494,18 @@ class FlxTweenManager extends FlxBasic
 				}
 			}
 		}
+	}
+
+	/**
+	 * Crude helper to search for any tweens with the desired properties
+	 * 
+	 * @since 5.7.0
+	 */
+	function containsTweensOf(object:Dynamic, ?fieldPaths:Array<String>):Bool
+	{
+		var found = false;
+		forEachTweensOf(object, fieldPaths, (_) -> found = true);
+		return found;
 	}
 
 	/**
