@@ -12,23 +12,10 @@ class FlxArrayUtil
 	 * @param	newLength	The length you want the array to have.
 	 */
 	@:generic
-	public static function setLength<T>(array:Array<T>, newLength:Int):Array<T>
+	public static inline function setLength<T>(array:Array<T>, newLength:Int):Array<T>
 	{
-		if (newLength < 0)
-			return array;
-
-		var oldLength:Int = array.length;
-		var diff:Int = newLength - oldLength;
-		if (diff >= 0)
-			return array;
-
-		#if flash
-		untyped array.length = newLength;
-		#else
-		diff = -diff;
-		for (i in 0...diff)
-			array.pop();
-		#end
+		if (newLength > 0)
+			array.resize(newLength);
 
 		return array;
 	}
@@ -106,7 +93,7 @@ class FlxArrayUtil
 	 */
 	public static inline function safeSwapByIndex<T>(array:Array<T>, index1:Int, index2:Int):Array<T>
 	{
-		if(index1 >= 0 && index1 < array.length && index2 >= 0 && index2 < array.length)
+		if (index1 >= 0 && index1 < array.length && index2 >= 0 && index2 < array.length)
 		{
 			swapByIndex(array, index1, index2);
 		}
@@ -222,7 +209,7 @@ class FlxArrayUtil
 	{
 		if (array == null)
 			array = [];
-		
+
 		array.push(element);
 		return array;
 	}
