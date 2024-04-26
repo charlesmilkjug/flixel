@@ -242,6 +242,12 @@ class FlxCamera extends FlxBasic
 	public var pixelPerfectRender:Bool;
 
 	/**
+	 * If true, screen shake will be rounded to game pixels. If null, pixelPerfectRender is used.
+	 * @since 5.4.0
+	 */
+	public var pixelPerfectShake:Null<Bool> = null;
+
+	/**
 	 * How wide the camera display is, in game pixels.
 	 */
 	public var width(default, set):Int = 0;
@@ -695,6 +701,10 @@ class FlxCamera extends FlxBasic
 		{
 			itemToReturn = new FlxDrawItem();
 		}
+
+		// TODO: catch this error when the dev actually messes up, not in the draw phase
+		if (graphic.isDestroyed)
+			throw 'Attempted to queue an invalid FlxDrawItem, did you destroy a cached sprite?';
 
 		itemToReturn.graphics = graphic;
 		itemToReturn.antialiasing = smooth;
@@ -1436,13 +1446,23 @@ class FlxCamera extends FlxBasic
 			}
 			else
 			{
+				final pixelPerfect = pixelPerfectShake == null ? pixelPerfectRender : pixelPerfectShake;
 				if (_fxShakeAxes.x)
 				{
-					flashSprite.x += FlxG.random.float(-_fxShakeIntensity * width, _fxShakeIntensity * width) * zoom * FlxG.scaleMode.scale.x;
+					var shakePixels = FlxG.random.float(-1, 1) * _fxShakeIntensity * width;
+					if (pixelPerfect)
+						shakePixels = Math.round(shakePixels);
+
+					flashSprite.x += shakePixels * zoom * FlxG.scaleMode.scale.x;
 				}
+
 				if (_fxShakeAxes.y)
 				{
-					flashSprite.y += FlxG.random.float(-_fxShakeIntensity * height, _fxShakeIntensity * height) * zoom * FlxG.scaleMode.scale.y;
+					var shakePixels = FlxG.random.float(-1, 1) * _fxShakeIntensity * height;
+					if (pixelPerfect)
+						shakePixels = Math.round(shakePixels);
+
+					flashSprite.y += shakePixels * zoom * FlxG.scaleMode.scale.y;
 				}
 			}
 		}
